@@ -8,6 +8,7 @@ pub mod individual;
 pub mod selection;
 pub mod chromosome;
 pub mod crossover;
+pub mod mutation;
 
 pub struct GeneticAlgorithm<S,C> {
     selection_method: S,
