@@ -1,8 +1,9 @@
 use rand::Rng;
 
+#[derive(Debug,Clone)]
 pub struct Neuron {
-    bias: f32,
-    weights: Vec<f32>,
+    pub bias: f32,
+    pub weights: Vec<f32>,
 }
 
 impl Neuron {
@@ -26,6 +27,19 @@ impl Neuron {
             .sum::<f32>();
 
         (self.bias + output).max(0.0)
+    }
+
+    pub fn from_weights(
+        output_neurons: usize,
+        weights: &mut dyn Iterator<Item = f32>,
+    ) -> Self {
+        let bias = weights.next().expect("got not enough weights");
+
+        let weights = (0..output_neurons)
+            .map(|_| weights.next().expect("got not enough weights"))
+            .collect();
+
+        Self { bias, weights }
     }
 }
 

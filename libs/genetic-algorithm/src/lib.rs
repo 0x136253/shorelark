@@ -2,19 +2,20 @@ use crossover::CrossoverMethod;
 use mutation::MutationMethod;
 use rand::RngCore;
 use selection::SelectionMethod;
-
-use crate::individual::Individual;
+use statistics::Statistics;
+use individual::Individual;
 
 pub mod individual;
 pub mod selection;
 pub mod chromosome;
 pub mod crossover;
 pub mod mutation;
+pub mod statistics;
 
 pub struct GeneticAlgorithm<S,C,M> {
     selection_method: S,
     crossover_method: C,
-    mutation_method: M
+    mutation_method: M,
 }
 
 impl<S,C,M> GeneticAlgorithm<S,C,M> 
@@ -39,13 +40,13 @@ where
         &self,
         rng: &mut dyn RngCore,
         population: &[I],
-    ) -> Vec<I>
+    ) -> (Vec<I>, Statistics)
     where
         I: Individual,
     {
         assert!(!population.is_empty());
 
-        (0..population.len())
+        let new_population = (0..population.len())
             .map(|_| {
                 let parent_a = self
                     .selection_method
@@ -64,7 +65,11 @@ where
                 self.mutation_method.mutate(rng, &mut child);
                 I::create(child)
             })
-            .collect()
+            .collect();
+
+        let stats = Statistics::new(population);
+
+        (new_population, stats)
     }
 }
 
@@ -100,7 +105,7 @@ mod tests {
         ];
 
         for _ in 0..10 {
-            population = ga.evolve(&mut rng, &population);
+            population = ga.evolve(&mut rng, &population).0;
         }
 
         let expected_population = vec![

@@ -2,8 +2,9 @@ use rand::RngCore;
 
 use crate::neuron::Neuron;
 
+#[derive(Debug,Clone)]
 pub struct Layer {
-    neurons: Vec<Neuron>,
+    pub neurons: Vec<Neuron>,
 }
 
 pub struct LayerTopology {
@@ -24,6 +25,18 @@ impl Layer {
             .iter()
             .map(|neuron| neuron.propagate(&inputs))
             .collect()
+    }
+
+    pub fn from_weights(
+        input_size: usize,
+        output_size: usize,
+        weights: &mut dyn Iterator<Item = f32>,
+    ) -> Self {
+        let neurons = (0..output_size)
+            .map(|_| Neuron::from_weights(input_size, weights))
+            .collect();
+
+        Self { neurons }
     }
 }
 

@@ -2,6 +2,12 @@ import * as sim from "lib-simulation_wasm";
 
 const simulation = new sim.Simulation();
 
+var gene = 0;
+document.getElementById('train').onclick = function() {
+    gene += 1;
+    console.log(simulation.train() + ", gene=" + gene);
+};
+
 const viewport = document.getElementById('viewport');
 
 const viewportWidth = viewport.width;
@@ -61,7 +67,12 @@ CanvasRenderingContext2D.prototype.drawCircle =
 function redraw() {
     ctxt.clearRect(0, 0, viewportWidth, viewportHeight);
 
-    simulation.step();
+    // Performs 10 steps per frame, which makes simulation 10x faster
+    // (at least if your computer can catch up!)
+    for (let i = 0; i < 10; i += 1) {
+        simulation.step();
+    }
+    // simulation.step();
 
     const world = simulation.world();
 

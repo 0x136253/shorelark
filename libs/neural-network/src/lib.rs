@@ -1,10 +1,14 @@
+use std::iter::once;
+
 use rand::RngCore;
 
-use crate::layer::{Layer, LayerTopology};
+use crate::layer::Layer;
+pub use crate::layer::LayerTopology;
 
 mod layer;
 mod neuron;
 
+#[derive(Debug,Clone)]
 pub struct Network {
     layers: Vec<Layer>,
 }
@@ -25,6 +29,40 @@ impl Network {
         self.layers
             .iter()
             .fold(inputs, |inputs, layer| layer.propagate(inputs))
+    }
+
+    pub fn weights(&self) -> impl Iterator<Item = f32> + '_ {
+        self.layers
+            .iter()
+            .flat_map(|layer| layer.neurons.iter())
+            .flat_map(|neuron| once(&neuron.bias).chain(&neuron.weights))
+            .cloned()
+    }
+
+    pub fn from_weights(
+        layers: &[LayerTopology],
+        weights: impl IntoIterator<Item = f32>,
+    ) -> Self {
+        assert!(layers.len() > 1);
+
+        let mut weights = weights.into_iter();
+
+        let layers = layers
+            .windows(2)
+            .map(|layers| {
+                Layer::from_weights(
+                    layers[0].neurons,
+                    layers[1].neurons,
+                    &mut weights,
+                )
+            })
+            .collect();
+
+        if weights.next().is_some() {
+            panic!("got too many weights");
+        }
+
+        Self { layers }
     }
 }
 
@@ -71,4 +109,5 @@ mod tests {
             assert_relative_eq!(outputs.as_slice(), [0.0, 0.35662687, 0.0, 0.0].as_ref());
         }
     }
+
 }
